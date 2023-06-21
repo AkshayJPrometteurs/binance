@@ -1,0 +1,52 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use GuzzleHttp\Client;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
+class BinanceController extends Controller
+{
+    private $httpClient;
+    private $apiKey;
+    private $apiSecret;
+
+    public function __construct()
+    {
+        $this->httpClient = new Client();
+        $this->apiKey = "u1NSqkuvc5H20jt1EfNDieikfAeQjV4Ym6AR1UaXjxH90V6cn19KWY2XDvqLPevc";
+        $this->apiSecret = "u1NSqkuvc5H20jt1EfNDieikfAeQjV4Ym6AR1UaXjxH90V6cn19KWY2XDvqLPevc";
+    }
+
+    public function getAccountInfo()
+    {
+        $endpoint = 'https://api.binance.com/api/v3/account';
+
+        $timestamp = time() * 1000;
+        $query = http_build_query(['timestamp' => $timestamp]);
+
+        $signature = hash_hmac('sha256', $query, $this->apiSecret);
+        $requestUrl = "{$endpoint}?{$query}&signature={$signature}";
+        print_r($requestUrl);
+        try {
+            $response = $this->httpClient->get($requestUrl, [
+                'headers' => [
+                    'X-MBX-APIKEY' => $this->apiKey,
+                ],
+            ]);
+
+            $accountInfo = json_decode($response->getBody(), true);
+            dd($accountInfo);
+            // Handle the account info response as per your requirement
+        } catch (\Exception $e) {
+            // Log the exception
+            Log::error('Binance API Error: ' . $e->getMessage());
+
+            // Return an error response or redirect to an error page
+            // return response()->view('error', ['message' => 'An error occurred. Please try again later.']);
+        }
+    }
+
+    // Add more methods for different Binance API endpoints as per your requirements
+}
